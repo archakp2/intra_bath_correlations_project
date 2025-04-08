@@ -195,15 +195,15 @@ def main():
     # dimension
     parser.add_argument('-n', type=int, required=True, help='Dimension of Hamiltonian')
     
-    parser.add_argument('-hs', nargs='*', help='Matrix entries, like h11 1 h23 21', default=[])
+    parser.add_argument('-hs', nargs='*', help='Matrix entries, like h11 1 h23 21, where hij = H[i,j]', default=[])
     
-    parser.add_argument('-gs', nargs='*', help='Coupling constants, like g1 0.1 1.1 0.1 g2 2.0 3.0 0.2', default=[])
+    parser.add_argument('-gs', nargs='*', help='Coupling constants, like g1 0.1 1.1 0.1. Starting from 0.1 till 1.1 with a gap of 0.1 between each entry', default=[])
 
     parser.add_argument('-gamma', nargs='*', help='', default = [0,0])
     
-    parser.add_argument('-betas', nargs='*', help='', default = [0,0])
+    parser.add_argument('-betas', nargs='*', help='an array of Betas containing information about temperature of bath', default = [0,0])
     
-    parser.add_argument('-mus', nargs='*', help='', default = [0,0])
+    parser.add_argument('-mus', nargs='*', help='an arrya of myus containing information about chemical potential of each bath', default = [0,0])
     
     args = parser.parse_args()
 
