@@ -24,7 +24,9 @@ def two_lead_mode():
     
     #---------- system Hamiltonian --------------#
 
+    # dimension
     Ns=4
+    # initialising the Hamiltonian
     H_s=np.zeros((Ns, Ns), dtype=np.complex128)
     g=1
     e0=0.5
