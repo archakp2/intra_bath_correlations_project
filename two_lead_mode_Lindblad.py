@@ -108,7 +108,9 @@ def two_lead_mode():
 
 
 
-    
+    print("archak  : this is sys bath corr", system_bath_correlation)
+    print("archak  : this is bath bath corr", bath_modes_correlation)
+
     
     plt.plot(gb, system_bath_correlation, '.')
     plt.plot(gb, bath_modes_correlation, '+')

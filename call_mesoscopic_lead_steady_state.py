@@ -38,7 +38,7 @@ def oqs_steady_state_convergence_with_no_of_bath_modes():
     H_s[1,3]=gb2
     H_s[3,1]=gb2
 
-    print (H_s)
+    # print (H_s)
     #---------------------------------------------#
 
     #---------------- system-bath coupling params----------#
@@ -77,7 +77,7 @@ def oqs_steady_state_convergence_with_no_of_bath_modes():
 
     for i in range(len(N)):
 
-        print ('N=',N[i])
+        # print ('N=',N[i])
 
         b1_lim=2
         w=np.linspace(eb1-b1_lim,eb1+b1_lim,N[i])
@@ -222,8 +222,8 @@ def correlations_vs_coupling():
 
 
         G, Q=build_full_set_up(H_s,bath1_pos,bath2_pos,mu1,mu2,beta1,beta2, Gamma1, Gamma2, J1,w1,J2,w2)
-
-
+        # print(G,Q)
+        # print()
     
         c_s_NESS=NESS(G, Q, Ns)
 
@@ -248,7 +248,9 @@ def correlations_vs_coupling():
 
 
     
-    
+    print("archak  : this is sys bath corr", system_bath_correlation)
+    print("archak  : this is bath bath corr", bath_modes_correlation)
+
     plt.plot(gb, system_bath_correlation, '.')
     plt.plot(gb, bath_modes_correlation, '+')
     

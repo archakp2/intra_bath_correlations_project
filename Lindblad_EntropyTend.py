@@ -3,121 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mesoscopic_lead_approach_steady_state import NESS
 from von_Neumann_entropy import S_from_C
+import getOQSobject
 
-
-
-def nf(omega,beta,mu):
-
-	if omega*(beta-mu)<1e2:
-		return 1/(np.exp(beta*(omega-mu))+1)
-	else:
-		return 0
-	
-
-
-def getCoupling(gInfo):
-    
-    g_series = {}
-    gList = []
-
-    i = 0
-    while i < len(gInfo):
-        g_name = gInfo[i]
-        start = float(gInfo[i+1])
-        end = float(gInfo[i+2])
-        step = float(gInfo[i+3])
-        gList.append(np.arange(start, end + step, step))
-        i += 4
-    
-    return gList
-
-
-
-
-def getFixedHamiltonian(Hinfo,n):
-
-    # create zero Hamiltonian
-    H = np.zeros((n, n), dtype=np.complex128)
-
-    # parse entries
-    for idx in range(0, len(Hinfo), 2):
-        entry = Hinfo[idx]
-        value = float(Hinfo[idx+1])
-        if entry.startswith('h') and len(entry) == 3:
-            i = int(entry[1]) - 1
-            j = int(entry[2]) - 1
-            H[i, j] = value    
-
-    return H
-
-
-def getGamma(gammaInfo,Ns):
-
-    gamma = np.zeros(Ns-2, dtype=np.complex128)
-
-    for i in range(Ns-2):
-        gamma[i] = gammaInfo[i]
-    
-    return gamma
-
-
-def getBetas(betaInfo,Ns):
-
-    betas = np.zeros(Ns-2, dtype=np.complex128)
-
-    for i in range(Ns-2):
-        betas[i] = betaInfo[i]
-    
-    return betas
-
-
-
-def getMyu(myuInfo,Ns):
-
-    myus = np.zeros(Ns-2, dtype=np.complex128)
-
-    for i in range(Ns-2):
-        myus[i] = myuInfo[i]
-    
-    return myus
-
-
-def modifyHamiltonian(H_s, gammas):
-    
-    nGammas = len(gammas)
-    
-    gammas = np.array(gammas, dtype=np.complex128)
-
-    
-    for i in range(nGammas):
-        
-        H_s[2+i,2+i] = H_s[2+i,2+i] - 1j*gammas[i]/2
-        
-    return H_s
-
-
-def getFermiDis(Hs,betas,myus):
-    
-    n = len(betas)
-    
-    nfs = []
-    
-    for i in range(n):
-        nfs.append(nf(Hs[2+i,2+i],betas[i],myus[i]))
-    
-    return nfs
-
-
-def getQ(N,gammas,nfs):
-    
-    # a matrix Q is initialized here
-    Q=np.zeros((N,N), dtype=np.complex128)    
-
-    for i in range(N-2):
-        Q[2+i,2+i]=gammas[i]*nfs[i]
-        
-    
-    return Q
 
 def getEntropies(H,Q,Ns,gb):
     
@@ -135,7 +22,6 @@ def getEntropies(H,Q,Ns,gb):
             H[2+i,1] = g
           
         G=-1j*H.conj()
-          
         c_s_NESS=NESS(G, Q, Ns)
 
         for i in range(Ns-2):
@@ -168,22 +54,7 @@ def getEntropies(H,Q,Ns,gb):
         system_bath_correlation.append(S_s + S_b - S_tot)
 
 
-    return bath_modes_correlation , system_bath_correlation
-
-def plotCorrels(SB, BB, g):
-    
-    for gi in g:
-        plt.plot(gi, SB, label='SB', marker='o')
-        plt.plot(gi, BB, label='BB', marker='x')
-
-        plt.xlabel('g')
-        plt.ylabel('Correlation')
-        plt.title('Correlations vs g')
-        plt.legend()
-        plt.grid(True)
-        plt.show()
-    
-    return
+    return  system_bath_correlation,bath_modes_correlation
 
 
 def main():
@@ -199,25 +70,25 @@ def main():
     
     parser.add_argument('-gs', nargs='*', help='Coupling constants, like g1 0.1 1.1 0.1. Starting from 0.1 till 1.1 with a gap of 0.1 between each entry', default=[])
 
-    parser.add_argument('-gamma', nargs='*', help='', default = [0,0])
+    parser.add_argument('-gamma', nargs='*', help='', default = [0.0,0.0])
     
-    parser.add_argument('-betas', nargs='*', help='an array of Betas containing information about temperature of bath', default = [0,0])
+    parser.add_argument('-betas', nargs='*', help='an array of Betas containing information about temperature of bath', default = [0.0,0.0])
     
-    parser.add_argument('-mus', nargs='*', help='an arrya of myus containing information about chemical potential of each bath', default = [0,0])
+    parser.add_argument('-mus', nargs='*', help='an array of myus containing information about chemical potential of each bath', default = [0.0,0.0])
     
     args = parser.parse_args()
 
     Ns = args.n
     
-    H = getFixedHamiltonian(args.hs,Ns)
-    gb = getCoupling(args.gs)
-    
-    gammas = getGamma(args.gamma,Ns)
-    betas = getBetas(args.betas,Ns)
-    myus = getMyu(args.mus,Ns)
+    H = getOQSobject.getFixedHamiltonian(args.hs,Ns)
+    gb = getOQSobject.getCoupling(args.gs)
     
     
-        
+    gammas = getOQSobject.getGamma(args.gamma,Ns)
+    betas = getOQSobject.getBetas(args.betas,Ns)
+    myus = getOQSobject.getMyu(args.mus,Ns)
+    
+    
     nBeta = len(betas)
     nMyus = len(myus)
     nGammas = len(gammas)
@@ -227,17 +98,16 @@ def main():
         print("Warning : dimensions are inconsistent")
         exit(-1)    
     
-    H_modified = modifyHamiltonian(H,gammas)
+    H_modified = getOQSobject.modifyHamiltonian(H,gammas)
 
-    nfs = getFermiDis(H_modified, betas, myus)
-	
+    nfs = getOQSobject.getFermiDis(H_modified, betas, myus)
  
-    Q = getQ(Ns,gammas,nfs)
-    
-    
+    Q = getOQSobject.getQ(Ns,gammas,nfs)
+
     SBcorrel,BBcorrel = getEntropies(H_modified,Q,Ns,gb[0])
     
-    plotCorrels(SBcorrel,BBcorrel,gb)
+    getOQSobject.plotCorrels(SBcorrel,BBcorrel,gb[0])
+    plt.show()
     
     return
 
@@ -254,5 +124,5 @@ if __name__ == "__main__":
 # python3 yourscript.py -n 4 -hs h11 1 h23 2 h34 3 -gs g1 0.1 1.1 0.1 -gamma 0.5 0.5 -betas 1.0 1.0 1.0 -mus 0.0 0.0 
 
 
-# python3 product.py -n 4 -hs h11 0.5 h22 0 h33 0.2 h44 -0.2 h21 1 h12 1 -gs g1 0.1 1.01 0.1 -gamma 0.01 0.01 -betas 30.0 30.0 -mus 0.0 0.0 
+# python3 Lindblad_EntropyTend.py -n 4 -hs h11 0.5 h22 0 h33 0.2 h44 -0.2 h21 1 h12 1 -gs g1 0.1 1.01 0.1 -gamma 0.01 0.01 -betas 30.0 30.0 -mus 0.0 0.0 
 
