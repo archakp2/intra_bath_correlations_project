@@ -11,6 +11,8 @@ def getEntropies(H,Q,Ns,gb):
     bath_modes_correlation = []
     system_bath_correlation = []
     
+    Cs = []
+    
     for g in gb:
         
         nbs = []
@@ -22,6 +24,8 @@ def getEntropies(H,Q,Ns,gb):
             H[2+i,1] = g
           
         G=-1j*H.conj()
+        
+        # gives us the rate of change of Calpha dagger Cbeta
         c_s_NESS=NESS(G, Q, Ns)
 
         for i in range(Ns-2):
@@ -35,6 +39,18 @@ def getEntropies(H,Q,Ns,gb):
         # rest of the square
         c_b=c_s_NESS[2:,2:]
 
+        # Create a 4x4 zero matrix
+        block_diag = np.zeros((Ns, Ns))
+
+        # Place c_s in the top-left 2x2 block
+        block_diag[:2, :2] = c_s
+
+        # Place c_b in the bottom-right 2x2 block
+        block_diag[2:, 2:] = c_b
+
+        # Append the block diagonal array to Cs
+        Cs.append(block_diag)
+        
         # entropy total from given C matrix
         S_tot = S_from_C(c_s_NESS)
 
@@ -54,7 +70,7 @@ def getEntropies(H,Q,Ns,gb):
         system_bath_correlation.append(S_s + S_b - S_tot)
 
 
-    return  system_bath_correlation,bath_modes_correlation
+    return  system_bath_correlation,bath_modes_correlation,np.array(Cs)
 
 
 def main():
@@ -104,7 +120,7 @@ def main():
  
     Q = getOQSobject.getQ(Ns,gammas,nfs)
 
-    SBcorrel,BBcorrel = getEntropies(H_modified,Q,Ns,gb[0])
+    SBcorrel,BBcorrel,C = getEntropies(H_modified,Q,Ns,gb[0])
     
     getOQSobject.plotCorrels(SBcorrel,BBcorrel,gb[0])
     plt.show()

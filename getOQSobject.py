@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
     
 #     return ax
 
-def plotCorrels(SB, BB, g, ax=None, label_prefix=''):
+def plotCorrels(SB, BB, g, ax=None, label_prefix='',logx=False,logy = False):
     if ax is None:
         fig, ax = plt.subplots()
 
@@ -32,6 +32,12 @@ def plotCorrels(SB, BB, g, ax=None, label_prefix=''):
     ax.set_title('Correlations vs g')
     ax.legend()
     ax.grid(True)
+    
+    if logx:
+        ax.set_xscale('log')
+    if logy:
+        ax.set_yscale('log')
+
 
     return ax
 
@@ -84,7 +90,6 @@ def getFixedHamiltonian(Hinfo,n):
 def getGamma(gammaInfo,Ns):
 
     gamma = np.zeros(Ns-2, dtype=np.complex128)
-
     for i in range(Ns-2):
         gamma[i] = gammaInfo[i]
     
@@ -150,6 +155,56 @@ def modifyHamiltonian(H_s, gammas):
         H_modif[2+i,2+i] = H_s[2+i,2+i] -1j*gammas[i]/2
         
     return H_modif
+
+
+
+
+def plotCijVSg(C_list, g_list, i, j, ax=None, part='real',logx = False, logy = False):
+    """
+    Plots C[i, j] vs g for a list of matrices and corresponding g values.
+
+    Parameters:
+    - C_list: list of N x N complex matrices
+    - g_list: list of scalar values (same length)
+    - i, j: indices for the matrix element to extract
+    - part: 'real', 'imag', or 'abs' to select component to plot
+    """
+    if ax is None:
+        fig, ax = plt.subplots()
+    
+    C_list = np.array(C_list)
+
+    # Extract the (i, j) element from each matrix
+    values = [C[i, j] for C in C_list]
+    print(C_list.shape)
+    # Select part of the complex number
+    if part == 'real':
+        values = [v.real for v in values]
+    elif part == 'imag':
+        values = [v.imag for v in values]
+    elif part == 'abs':
+        values = [abs(v) for v in values]
+    else:
+        raise ValueError("part must be 'real', 'imag', or 'abs'")
+
+    print(g_list)
+    print(values)
+
+    ax.plot(g_list,values,label = f'C{i}{j} vs g' )
+    
+    ax.set_xlabel('g')
+    ax.set_ylabel('C{i}{j}')
+    ax.set_title('C{i}{j} vs g')
+    ax.legend()
+    ax.grid(True)
+    
+    if logx:
+        ax.set_xscale('log')
+    if logy:
+        ax.set_yscale('log')
+
+
+    return ax
 
 
 

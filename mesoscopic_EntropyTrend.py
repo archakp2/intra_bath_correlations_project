@@ -24,7 +24,8 @@ def getMesoEntropies(H, Ns, bath_pos, myus, betas , gammas , Ws , gb , N = 200,b
 
     system_bath_correlation = []
     bath_modes_correlation= []
-    
+
+    C_info  = []
 
     for i in range(nbath):
         
@@ -56,9 +57,21 @@ def getMesoEntropies(H, Ns, bath_pos, myus, betas , gammas , Ws , gb , N = 200,b
 
         # upper 2x2 square
         c_s=c_s_NESS[:2,:2]
-        
         # rest of the square
         c_b=c_s_NESS[2:,2:]
+        # print("shape of cs is ", c_b.shape)
+
+        # Create a 4x4 zero matrix
+        block_diag = np.zeros((Ns, Ns))
+
+        # Place c_s in the top-left 2x2 block
+        block_diag[:2, :2] = c_s
+
+        # Place c_b in the bottom-right 2x2 block
+        block_diag[2:, 2:] = c_b
+
+        # Append the block diagonal array to Cs
+        C_info.append(block_diag)
 
         # entropy total from given C matrix
         S_tot = S_from_C(c_s_NESS)
@@ -77,7 +90,7 @@ def getMesoEntropies(H, Ns, bath_pos, myus, betas , gammas , Ws , gb , N = 200,b
     
     
     
-    return system_bath_correlation, bath_modes_correlation 
+    return system_bath_correlation, bath_modes_correlation , np.array(C_info)
 
 
 def getBathPos(bathPosInfo,Ns):
@@ -93,9 +106,9 @@ def getBathPos(bathPosInfo,Ns):
 
 def getWs(Winfo,Ns):
 
-    W = np.zeros(Ns-2, dtype=np.complex128)
+    W = np.zeros(2, dtype=np.complex128)
 
-    for i in range(Ns-2):
+    for i in range(2):
         W[i] = Winfo[i]
 
     
@@ -134,6 +147,7 @@ def main():
     H = getOQSobject.getFixedHamiltonian(args.hs,Ns)
     gb = getOQSobject.getCoupling(args.gs)
     
+    print(len(gb[0]))
     
     gammas = getOQSobject.getGamma(args.gamma,Ns)
     betas = getOQSobject.getBetas(args.betas,Ns)
@@ -156,9 +170,17 @@ def main():
     H_modified = H
     
     
-    SBcorrel,BBcorrel = getMesoEntropies(H_modified, Ns ,bathPos , myus, betas , gammas , Ws, gb[0])
-
+    # C --> list of different C matrix corresponding to each gb
+    SBcorrel,BBcorrel,C = getMesoEntropies(H_modified, Ns ,bathPos , myus, betas , gammas , Ws, gb[0])
+    C = np.array(C)
+    print(C.shape)
+    Cs = np.array([c[0] for c in C])
+    Cb = np.array([c[1] for c in C])
+    print(Cs.shape,Cb.shape)
     getOQSobject.plotCorrels(SBcorrel,BBcorrel,gb[0])
+    
+    # getOQSobject.plotCijVSg(Cs,gb,0,1)
+    
     plt.show()
     
     return

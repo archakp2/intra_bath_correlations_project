@@ -3,15 +3,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from two_baths_construction_for_steady_state import buildFullSetUp
 from mesoscopic_lead_approach_steady_state import NESS
-import spectral_functions
-import time
 from von_Neumann_entropy import S_from_C
 import getOQSobject
 
 import Lindblad_EntropyTend
 import mesoscopic_EntropyTrend
 
-
+import importlib
+importlib.reload(Lindblad_EntropyTend)
 
 
 
@@ -73,21 +72,36 @@ def main():
     
     H_mesocscopic = H
     
-    SBcorrelMeso,BBcorrelMeso = mesoscopic_EntropyTrend.getMesoEntropies(H_mesocscopic, Ns ,bathPos , myus, betas , gammas , Ws, gb[0])
+    SBcorrelMeso,BBcorrelMeso, Cmeso = mesoscopic_EntropyTrend.getMesoEntropies(H_mesocscopic, Ns ,bathPos , myus, betas , gammas , Ws, gb[0])
 
 
     nfsLindblad = getOQSobject.getFermiDis(H_modifiedLindBlad, betas, myus)
     Qlindblad = getOQSobject.getQ(Ns,gammas,nfsLindblad)
-    SBcorrelLindblad, BBcorrelLindblad = Lindblad_EntropyTend.getEntropies(H_modifiedLindBlad,Qlindblad,Ns,gb[0])
-        
-
-    fig, ax = plt.subplots()
+    SBcorrelLindblad, BBcorrelLindblad, Clindblad = Lindblad_EntropyTend.getEntropies(H_modifiedLindBlad,Qlindblad,Ns,gb[0])
     
-    getOQSobject.plotCorrels(SBcorrelMeso, BBcorrelMeso, gb[0], ax=ax, label_prefix='Meso ')
-    getOQSobject.plotCorrels(SBcorrelLindblad, BBcorrelLindblad, gb[0], ax=ax, label_prefix='Lindblad ')
+    print(Clindblad.shape)
     
+    fig1, ax1 = plt.subplots()
+    
+    getOQSobject.plotCorrels(SBcorrelMeso, BBcorrelMeso, gb[0], ax=ax1, label_prefix='Meso ')
+    getOQSobject.plotCorrels(SBcorrelLindblad, BBcorrelLindblad, gb[0], ax=ax1, label_prefix='Lindblad ')
+    
+    ax1.set_title("Correlations")
+    plt.legend()
+    plt.grid(True)
+    
+    # Second canvas: C[i,j] vs g plots
+    fig2, ax2 = plt.subplots()
+    
+    getOQSobject.plotCijVSg(Cmeso, gb[0], 0, 1, ax2)
+    getOQSobject.plotCijVSg(Clindblad, gb[0], 0, 1, ax2)
+    
+    ax2.set_title("C[0,1] vs g")
+    plt.grid(True)
+    
+    # Show both plots
     plt.show()
-    
+       
     return
 
 
