@@ -5,10 +5,11 @@ from two_baths_construction_for_steady_state import buildFullSetUp
 from mesoscopic_lead_approach_steady_state import NESS
 from von_Neumann_entropy import S_from_C
 import getOQSobject
+import pandas as pd
 
 import Lindblad_EntropyTend
 import mesoscopic_EntropyTrend
-
+import csv
 import importlib
 importlib.reload(Lindblad_EntropyTend)
 
@@ -40,9 +41,20 @@ def main():
     
     parser.add_argument('-W', nargs='*', help='input W = [wmin, wmax]', default = [0.0,0.0])
     
+    parser.add_argument( '-o1', '--output1',
+            default="",
+            help='Specify output name. If not given, uses system default of Geometry+DateTime.root' )
+    parser.add_argument( '-o2', '--output2',
+            default="",
+            help='Specify output name. If not given, uses system default of Geometry+DateTime.root' )
+    
     
     args = parser.parse_args()
-
+    
+    output1 = args.output1 + ".csv"
+    output2 = args.output2 + ".csv"
+    
+    
     Ns = args.n
     N = np.arange(20,201,20,dtype=int)
     
@@ -79,28 +91,46 @@ def main():
     Qlindblad = getOQSobject.getQ(Ns,gammas,nfsLindblad)
     SBcorrelLindblad, BBcorrelLindblad, Clindblad = Lindblad_EntropyTend.getEntropies(H_modifiedLindBlad,Qlindblad,Ns,gb[0])
     
-    print(Clindblad.shape)
+    data1 = np.array([gb[0], SBcorrelLindblad, BBcorrelLindblad, SBcorrelMeso, BBcorrelMeso])
+    data1 = data1.T
+    output_file1 = output1
+
+    df1 = pd.DataFrame(data1, columns=['g', 'SBcorrelLindblad',"BBcorrelLindblad","SBcorrelMeso", "BBcorrelMeso"])
+    df1.to_csv(output_file1, index=False)
     
-    fig1, ax1 = plt.subplots()
     
-    getOQSobject.plotCorrels(SBcorrelMeso, BBcorrelMeso, gb[0], ax=ax1, label_prefix='Meso ')
-    getOQSobject.plotCorrels(SBcorrelLindblad, BBcorrelLindblad, gb[0], ax=ax1, label_prefix='Lindblad ')
+    Cmeso10 = np.array([C[0, 1] for C in Cmeso])
+    Clindblad10 = np.array([C[0, 1] for C in Clindblad])
+    print(Cmeso10.shape)
     
-    ax1.set_title("Correlations")
-    plt.legend()
-    plt.grid(True)
+    data2 = np.array([gb[0],Cmeso10,Clindblad10])
+
+    data2 = data2.T
+    output_file2 = output2
+    df2 = pd.DataFrame(data2, columns=['g', 'Cmeso',"Clindblad"])
+    df2.to_csv(output_file2, index=False)
+    
+    
+    # fig1, ax1 = plt.subplots()
+    
+    # getOQSobject.plotCorrels(SBcorrelMeso, BBcorrelMeso, gb[0], ax=ax1, label_prefix='Meso ')
+    # getOQSobject.plotCorrels(SBcorrelLindblad, BBcorrelLindblad, gb[0], ax=ax1, label_prefix='Lindblad ')
+    
+    # ax1.set_title("Correlations")
+    # plt.legend()
+    # plt.grid(True)
     
     # Second canvas: C[i,j] vs g plots
-    fig2, ax2 = plt.subplots()
+    # fig2, ax2 = plt.subplots()
     
-    getOQSobject.plotCijVSg(Cmeso, gb[0], 0, 1, ax2)
-    getOQSobject.plotCijVSg(Clindblad, gb[0], 0, 1, ax2)
+    # getOQSobject.plotCijVSg(Cmeso, gb[0], 0, 1, ax2)
+    # getOQSobject.plotCijVSg(Clindblad, gb[0], 0, 1, ax2)
     
-    ax2.set_title("C[0,1] vs g")
-    plt.grid(True)
+    # ax2.set_title("C[0,1] vs g")
+    # plt.grid(True)
     
-    # Show both plots
-    plt.show()
+    # # Show both plots
+    # plt.show()
        
     return
 
@@ -112,4 +142,4 @@ if __name__ == "__main__":
     main()
 
 
-# python3 EntropyCompare.py -n 4 -hs h11 0.5 h22 0 h33 0.2 h44 -0.2 h21 1 h12 1 -gs g1 0.1 1.01 0.1 -gamma 0.01 0.01 -betas 30.0 30.0 -mus 0.0 0.0 -W -20 20 -bathPos 2 3
+# python3 EntropyCompare.py -n 4 -hs h11 0.5 h22 0 h33 0.2 ch44 -0.2 h21 1 h12 1 -gs g1 0.1 1.01 0.1 -gamma 0.01 0.01 -betas 30.0 30.0 -mus 0.0 0.0 -W -20 20 -bathPos 2 3

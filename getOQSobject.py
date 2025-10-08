@@ -77,7 +77,9 @@ def getFixedHamiltonian(Hinfo,n):
 
     # parse entries
     for idx in range(0, len(Hinfo), 2):
+        # Hij
         entry = Hinfo[idx]
+        # value in Hij
         value = float(Hinfo[idx+1])
         if entry.startswith('h') and len(entry) == 3:
             i = int(entry[1]) - 1
