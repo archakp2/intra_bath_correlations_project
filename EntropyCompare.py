@@ -90,25 +90,43 @@ def main():
     nfsLindblad = getOQSobject.getFermiDis(H_modifiedLindBlad, betas, myus)
     Qlindblad = getOQSobject.getQ(Ns,gammas,nfsLindblad)
     SBcorrelLindblad, BBcorrelLindblad, Clindblad = Lindblad_EntropyTend.getEntropies(H_modifiedLindBlad,Qlindblad,Ns,gb[0])
-    
-    data1 = np.array([gb[0], SBcorrelLindblad, BBcorrelLindblad, SBcorrelMeso, BBcorrelMeso])
-    data1 = data1.T
-    output_file1 = output1
 
-    df1 = pd.DataFrame(data1, columns=['g', 'SBcorrelLindblad',"BBcorrelLindblad","SBcorrelMeso", "BBcorrelMeso"])
-    df1.to_csv(output_file1, index=False)
+    data1 = np.array([gb[0], SBcorrelLindblad, BBcorrelLindblad, SBcorrelMeso, BBcorrelMeso]).T
+    output_file1 = output1
     
+    # Save as space-separated text file with header
+    header1 = "g SBcorrelLindblad BBcorrelLindblad SBcorrelMeso BBcorrelMeso"
+    np.savetxt(output_file1, data1, header=header1, fmt="%.6e", delimiter=" ")
     
+    # --- Second dataset ---
     Cmeso10 = np.array([C[0, 1] for C in Cmeso])
     Clindblad10 = np.array([C[0, 1] for C in Clindblad])
     print(Cmeso10.shape)
     
-    data2 = np.array([gb[0],Cmeso10,Clindblad10])
-
-    data2 = data2.T
+    data2 = np.array([gb[0], Cmeso10, Clindblad10]).T
     output_file2 = output2
-    df2 = pd.DataFrame(data2, columns=['g', 'Cmeso',"Clindblad"])
-    df2.to_csv(output_file2, index=False)
+    
+    header2 = "g Cmeso Clindblad"
+    np.savetxt(output_file2, data2, header=header2, fmt="%.6e", delimiter=" ")
+    
+    # data1 = np.array([gb[0], SBcorrelLindblad, BBcorrelLindblad, SBcorrelMeso, BBcorrelMeso])
+    # data1 = data1.T
+    # output_file1 = output1
+
+    # df1 = pd.DataFrame(data1, columns=['g', 'SBcorrelLindblad',"BBcorrelLindblad","SBcorrelMeso", "BBcorrelMeso"])
+    # df1.to_csv(output_file1, index=False)
+    
+    
+    # Cmeso10 = np.array([C[0, 1] for C in Cmeso])
+    # Clindblad10 = np.array([C[0, 1] for C in Clindblad])
+    # print(Cmeso10.shape)
+    
+    # data2 = np.array([gb[0],Cmeso10,Clindblad10])
+
+    # data2 = data2.T
+    # output_file2 = output2
+    # df2 = pd.DataFrame(data2, columns=['g', 'Cmeso',"Clindblad"])
+    # df2.to_csv(output_file2, index=False)
     
     
     # fig1, ax1 = plt.subplots()
